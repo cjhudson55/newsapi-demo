@@ -8,6 +8,7 @@ const countrySelect = document.getElementById('countrySelect');
 const topicSelect = document.getElementById('topicSelect');
 const searchBtn = document.getElementById('searchBtn');
 const searchInput = document.getElementById('searchInput');
+const langSelect = document.getElementById('langSelect');
 
 
 // API token call
@@ -34,24 +35,32 @@ function mainFunction(myKey) {
     const key = myKey;
     getNews('en', 'breaking-news');
 
+    $('#searchSubmit').click(function() {
+        searchNews(searchInput.value);
+    })
+
     $('#topicSelect').change(function() {
-        filtered(countrySelect.value, topicSelect.value);
+        filtered(countrySelect.value, topicSelect.value, langSelect.value);
     })
 
     $('#countrySelect').change(function() {
-        filtered(countrySelect.value, topicSelect.value);
+        filtered(countrySelect.value, topicSelect.value, langSelect.value);
+    })
+
+    $('#langSelect').change(function() {
+        filtered(countrySelect.value, topicSelect.value, langSelect.value);
     })
 
     // filtered function is running our getNews function
     function filtered() {
-        getNews(countrySelect.value, topicSelect.value);
+        getNews(countrySelect.value, topicSelect.value, langSelect.value);
     }
 
-    function getNews (country, topic) {
+    function getNews (country, topic, language) {
 
         $.ajax ({
             // url: `${url}top-headlines?apikey=${key}`,
-            url: `${url}top-headlines?category=${topic}&lang=en&country=${country}&apikey=${key}`,
+            url: `${url}top-headlines?category=${topic}&lang=${language}&country=${country}&apikey=${key}`,
             type: 'GET',
             data: 'json',
             // pulling back an array called newsData
@@ -84,5 +93,51 @@ function mainFunction(myKey) {
         })
   
     }
+
+    function searchNews(search) {
+        console.log(search);
+
+        $.ajax({
+            url: `${url}search?q=${search}&lang=en&apikey=${key}`,
+            type: 'GET',
+            data: 'json',
+            success: function(newsData) {
+                let results = document.getElementById('results');
+                results.innerHTML = '';
+                for (let i = 0; i < newsData.articles.length; i++) {
+                    let story = newsData.articles[i];
+                    results.innerHTML += `
+                    <div class="col-lg-4 col-md-6 col-sm-12">
+                        <div class="card mt-3">
+                            <img src="${story.image}" class="card-img-top" alt="news image">
+                            <div class="card-body">
+                                <h5 class="card-title fw-bold">${story.title}</h5>
+                                <p class="card-text fw-light"> 
+                                    ${story.description}<br><br>Source: <a class="text-primary" href="${story.source.url}" target="_blank">${story.source.name}</a><br><br><a class="text-danger" href="${story.url}" target="_blank">View full article</a>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    `
+                    console.log(newsData);
+                }                
+            },
+            error: function () {
+                console.log('could not do search');
+            }
+        })
+    }
+
 }
 
+// function aboutMe() {
+//     let aboutMe = document.getElementById('aboutMe');
+//     aboutMe.innerHTML = '';
+//     aboutMe.innerHTML += `
+//     <div class="col-lg-4 col-md-6 col-sm-12">
+//         <p>Hi there my name is Christine</p>
+//     </div>
+//     `
+// }
+
+// aboutMe();
